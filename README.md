@@ -36,6 +36,17 @@ Live at: **https://goyal74.github.io/mcu-calculator/**
 
 Download `index.html`, open in any modern browser. No installation, no dependencies.
 
+## Analysis code
+
+Reproducible Python scripts for all manuscript quantitative results are in [`analysis/`](analysis/README.md):
+
+```bash
+cd analysis
+pip install -r requirements.txt
+python mcu_analysis.py
+python generate_figures.py
+```
+
 ## Deployment to GitHub Pages
 
 1. Create a new public GitHub repository (e.g. `mcu-calculator`).

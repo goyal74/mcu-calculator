@@ -1,0 +1,94 @@
+{
+  "chr1": {
+    "hiccups_loops": 931,
+    "arrowhead_domains": 889
+  },
+  "chr2": {
+    "hiccups_loops": 706,
+    "arrowhead_domains": 736
+  },
+  "chr3": {
+    "hiccups_loops": 626,
+    "arrowhead_domains": 614
+  },
+  "chr4": {
+    "hiccups_loops": 492,
+    "arrowhead_domains": 446
+  },
+  "chr5": {
+    "hiccups_loops": 554,
+    "arrowhead_domains": 503
+  },
+  "chr6": {
+    "hiccups_loops": 598,
+    "arrowhead_domains": 561
+  },
+  "chr7": {
+    "hiccups_loops": 488,
+    "arrowhead_domains": 458
+  },
+  "chr8": {
+    "hiccups_loops": 497,
+    "arrowhead_domains": 416
+  },
+  "chr9": {
+    "hiccups_loops": 377,
+    "arrowhead_domains": 374
+  },
+  "chr10": {
+    "hiccups_loops": 429,
+    "arrowhead_domains": 444
+  },
+  "chr11": {
+    "hiccups_loops": 520,
+    "arrowhead_domains": 499
+  },
+  "chr12": {
+    "hiccups_loops": 496,
+    "arrowhead_domains": 500
+  },
+  "chr13": {
+    "hiccups_loops": 246,
+    "arrowhead_domains": 253
+  },
+  "chr14": {
+    "hiccups_loops": 315,
+    "arrowhead_domains": 299
+  },
+  "chr15": {
+    "hiccups_loops": 250,
+    "arrowhead_domains": 306
+  },
+  "chr16": {
+    "hiccups_loops": 267,
+    "arrowhead_domains": 271
+  },
+  "chr17": {
+    "hiccups_loops": 378,
+    "arrowhead_domains": 411
+  },
+  "chr18": {
+    "hiccups_loops": 224,
+    "arrowhead_domains": 229
+  },
+  "chr19": {
+    "hiccups_loops": 254,
+    "arrowhead_domains": 317
+  },
+  "chr20": {
+    "hiccups_loops": 254,
+    "arrowhead_domains": 249
+  },
+  "chr21": {
+    "hiccups_loops": 101,
+    "arrowhead_domains": 96
+  },
+  "chr22": {
+    "hiccups_loops": 163,
+    "arrowhead_domains": 177
+  },
+  "chrX": {
+    "hiccups_loops": 282,
+    "arrowhead_domains": 226
+  }
+}
