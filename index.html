@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Metaphase Chromatin Unit (MCU) Calculator — Goyal & Goyal 2026</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+         max-width: 900px; margin: 30px auto; padding: 0 24px; color: #222;
+         background: #fafafa; line-height: 1.5; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+  .panel { background: white; border-radius: 8px; padding: 20px 24px;
+           margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+  .panel h2 { font-size: 16px; margin: 0 0 14px 0; color: #01579B; }
+  .row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .row label { flex: 0 0 240px; font-size: 13px; color: #444; }
+  .row input { width: 130px; padding: 6px 10px; border: 1px solid #ccc;
+               border-radius: 4px; font-size: 14px; }
+  .row input:focus { outline: 2px solid #01579B; border-color: #01579B; }
+  .row .unit { color: #666; font-size: 13px; min-width: 70px; }
+  .row .derived { color: #0d4a7f; font-weight: 600; min-width: 110px; }
+  .info { background: #FFF3E0; border-left: 4px solid #F57F17; padding: 10px 14px;
+          font-size: 13px; margin: 12px 0; border-radius: 4px; }
+  .verdict { font-size: 15px; font-weight: 600; padding: 12px;
+             border-radius: 6px; text-align: center; margin-top: 10px; }
+  .verdict.visible { background: #C8E6C9; color: #1B5E20; }
+  .verdict.borderline { background: #FFE0B2; color: #E65100; }
+  .verdict.hidden { background: #FFCDD2; color: #B71C1C; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 8px; }
+  th, td { padding: 6px 10px; border: 1px solid #ddd; text-align: left; }
+  th { background: #E1F5FE; color: #01579B; }
+  .footer { font-size: 11px; color: #888; margin-top: 30px; text-align: center; }
+  .citation { background: #F3E5F5; padding: 8px 14px; border-radius: 6px;
+              font-size: 12px; margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<h1>Metaphase Chromatin Unit (MCU) Calculator</h1>
+<div class="subtitle">
+  Supplementary tool for Goyal &amp; Goyal 2026.
+  Translate between DNA content (Mb), metaphase length (μm),
+  MCUs, Hi-C boundaries, and cytogenetic detection thresholds.
+</div>
+
+<div class="citation">
+  <b>Conversion constants used (this manuscript):</b><br>
+  &nbsp;• 1 MCU = 7.6 Mb DNA = 0.25 μm metaphase axial length<br>
+  &nbsp;• Linear compaction = 33.4 nm/Mb (95% CI [32.3, 33.5])<br>
+  &nbsp;• Abbe diffraction limit ≈ 196 nm at NA 1.4, λ 550 nm = 6.0 Mb threshold<br>
+  &nbsp;• 1 MCU contains ≈ 41 Rao 2014 contact domains, ≈ 9 Dixon 2012 TADs, ≈ 150 Gibcus mitotic loops
+</div>
+
+<div class="panel">
+  <h2>Universal input — enter any value, others update automatically</h2>
+  <div class="row">
+    <label>DNA content (Mb):</label>
+    <input type="number" id="mb" value="100" step="0.1" oninput="update('mb')">
+    <span class="unit">Mb</span>
+    <span class="derived" id="mb_d">= 13.16 MCU</span>
+  </div>
+  <div class="row">
+    <label>Metaphase length (μm):</label>
+    <input type="number" id="um" value="3.34" step="0.01" oninput="update('um')">
+    <span class="unit">μm</span>
+    <span class="derived" id="um_d">= 13.16 MCU</span>
+  </div>
+  <div class="row">
+    <label>Metaphase length (nm):</label>
+    <input type="number" id="nm" value="3340" step="1" oninput="update('nm')">
+    <span class="unit">nm</span>
+    <span class="derived" id="nm_d"></span>
+  </div>
+  <div class="row">
+    <label>MCU count:</label>
+    <input type="number" id="mcu" value="13.16" step="0.01" oninput="update('mcu')">
+    <span class="unit">MCU</span>
+    <span class="derived" id="mcu_d">= 1 Gibcus helical turn each</span>
+  </div>
+  <div class="row">
+    <label>Rao contact domains (185 kb):</label>
+    <input type="number" id="rao" value="540" step="1" oninput="update('rao')">
+    <span class="unit">domains</span>
+    <span class="derived" id="rao_d"></span>
+  </div>
+  <div class="row">
+    <label>Dixon TADs (880 kb):</label>
+    <input type="number" id="dixon" value="114" step="1" oninput="update('dixon')">
+    <span class="unit">TADs</span>
+    <span class="derived" id="dixon_d"></span>
+  </div>
+  <div class="row">
+    <label>Gibcus mitotic outer loops (400 kb):</label>
+    <input type="number" id="loops" value="250" step="1" oninput="update('loops')">
+    <span class="unit">loops</span>
+    <span class="derived" id="loops_d"></span>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Cytogenetic CNV detectability</h2>
+  <div id="verdict" class="verdict visible">Predicted: above 6.0 Mb threshold — karyotypically visible</div>
+  <div class="info" id="explain">
+    A 100 Mb DNA segment contributes ~3340 nm of metaphase length, well above the 196 nm Abbe diffraction limit.
+    This is a "visible" structural change on standard 400-band karyotype.
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Reference: per-chromosome MCU breakdown (GRCh38)</h2>
+  <table>
+    <thead><tr><th>Chr</th><th>Mb</th><th>MCU</th><th>Predicted L (μm)</th><th>Observed L (μm)</th></tr></thead>
+    <tbody id="chrtable"></tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <h2>Aneuploidy length predictions</h2>
+  <table>
+    <thead><tr><th>Aneuploidy</th><th>Affected chromosome</th><th>MCU change</th><th>Length change (μm)</th></tr></thead>
+    <tbody>
+      <tr><td>Trisomy 13 (Patau)</td><td>chr13 (+114.4 Mb)</td><td>+15.0</td><td>+3.76</td></tr>
+      <tr><td>Trisomy 18 (Edwards)</td><td>chr18 (+80.4 Mb)</td><td>+10.6</td><td>+2.64</td></tr>
+      <tr><td>Trisomy 21 (Down)</td><td>chr21 (+46.7 Mb)</td><td>+6.1</td><td>+1.54</td></tr>
+      <tr><td>Klinefelter (XXY)</td><td>+X (156.0 Mb)</td><td>+20.5</td><td>+5.13</td></tr>
+      <tr><td>Triple X</td><td>+X (156.0 Mb)</td><td>+20.5</td><td>+5.13</td></tr>
+      <tr><td>XYY</td><td>+Y (57.2 Mb)</td><td>+7.5</td><td>+1.88</td></tr>
+      <tr><td>Turner (X0)</td><td>−X (156.0 Mb)</td><td>−20.5</td><td>−5.13</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <h2>Microdeletion syndrome quick reference</h2>
+  <table>
+    <thead><tr><th>Syndrome</th><th>Mb</th><th>MCU</th><th>nm</th><th>Detection</th></tr></thead>
+    <tbody>
+      <tr><td>Williams (7q11.23)</td><td>1.6</td><td>0.21</td><td>53</td><td style="color:#B71C1C">FISH</td></tr>
+      <tr><td>22q11.2 (DiGeorge)</td><td>3.0</td><td>0.39</td><td>99</td><td style="color:#B71C1C">FISH</td></tr>
+      <tr><td>1p36 deletion</td><td>3.5</td><td>0.46</td><td>115</td><td style="color:#B71C1C">FISH</td></tr>
+      <tr><td>Smith-Magenis (17p11.2)</td><td>3.7</td><td>0.49</td><td>121</td><td style="color:#B71C1C">FISH</td></tr>
+      <tr><td>Angelman/PWS (15q11-13)</td><td>5.6</td><td>0.74</td><td>184</td><td style="color:#E65100">Borderline</td></tr>
+      <tr><td>22q11.2 atypical</td><td>6.5</td><td>0.86</td><td>213</td><td style="color:#1B5E20">Karyotype</td></tr>
+      <tr><td>Jacobsen (11q23.3)</td><td>11</td><td>1.45</td><td>361</td><td style="color:#1B5E20">Karyotype</td></tr>
+      <tr><td>Wolf-Hirschhorn (4p16.3)</td><td>25</td><td>3.29</td><td>821</td><td style="color:#1B5E20">Karyotype</td></tr>
+      <tr><td>Cri-du-chat (5p15.2)</td><td>30</td><td>3.95</td><td>985</td><td style="color:#1B5E20">Karyotype</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  Goyal &amp; Goyal 2026. This calculator is intended as a quantitative aid for clinical cytogenetics,
+  Hi-C interpretation, and chromosome biology. All conversions follow the manuscript's
+  empirical 33.4 nm/Mb scaling and the 1 MCU = 7.6 Mb = 0.25 μm definition.
+</div>
+
+<script>
+// Conversion constants
+const NM_PER_MB = 33.4;          // nm of metaphase per Mb DNA
+const MB_PER_MCU = 7.6;          // Mb per Metaphase Chromatin Unit
+const UM_PER_MCU = 0.25;         // um per MCU (= one Gibcus helical turn)
+const KB_PER_RAO = 185;          // Rao contact domain size
+const KB_PER_DIXON = 880;        // Dixon TAD size
+const KB_PER_LOOP = 400;         // Gibcus prometaphase outer loop
+const ABBE_NM = 196;             // Abbe limit at NA 1.4, lambda 550 nm
+const CNV_THRESHOLD_MB = ABBE_NM / NM_PER_MB;  // = ~5.9 Mb
+
+const human = [
+  ['1',8.208,248.96],['2',7.976,242.19],['3',6.676,198.30],['4',6.338,190.21],
+  ['5',6.054,181.54],['6',5.704,170.81],['7',5.322,159.35],['8',4.828,145.14],
+  ['9',4.528,138.39],['10',4.508,133.80],['11',4.516,135.09],['12',4.466,133.28],
+  ['13',3.580,114.36],['14',3.408,107.04],['15',3.292,101.99],['16',3.054,90.34],
+  ['17',2.858,83.26],['18',2.682,80.37],['19',2.116,58.62],['20',2.248,64.44],
+  ['21',1.576,46.71],['22',1.732,50.82],['X',5.142,156.04],['Y',1.846,57.23],
+];
+
+function fmt(x, dec=2) { return Number(x).toFixed(dec); }
+
+function recompute(mb) {
+  document.getElementById('mb').value = fmt(mb, 2);
+  document.getElementById('um').value = fmt(mb * NM_PER_MB / 1000, 3);
+  document.getElementById('nm').value = fmt(mb * NM_PER_MB, 0);
+  document.getElementById('mcu').value = fmt(mb / MB_PER_MCU, 2);
+  document.getElementById('rao').value = fmt(mb * 1000 / KB_PER_RAO, 0);
+  document.getElementById('dixon').value = fmt(mb * 1000 / KB_PER_DIXON, 0);
+  document.getElementById('loops').value = fmt(mb * 1000 / KB_PER_LOOP, 0);
+
+  document.getElementById('mb_d').textContent = '= ' + fmt(mb / MB_PER_MCU, 2) + ' MCU';
+  document.getElementById('um_d').textContent = '= ' + fmt(mb / MB_PER_MCU, 2) + ' MCU';
+  document.getElementById('nm_d').textContent = '= ' + fmt(mb * NM_PER_MB, 0) + ' nm exact';
+  document.getElementById('mcu_d').textContent =
+    '= ' + fmt(mb, 1) + ' Mb = ' + fmt(mb * NM_PER_MB / 1000, 3) + ' μm';
+  document.getElementById('rao_d').textContent = '× 185 kb each';
+  document.getElementById('dixon_d').textContent = '× 880 kb each';
+  document.getElementById('loops_d').textContent = '× 400 kb each';
+
+  const nm = mb * NM_PER_MB;
+  const verdict = document.getElementById('verdict');
+  const explain = document.getElementById('explain');
+  if (nm > 350) {
+    verdict.className = 'verdict visible';
+    verdict.textContent = 'Predicted: above 1 MCU — karyotypically visible (≥ 6 Mb)';
+    explain.textContent =
+      'A ' + fmt(mb,1) + ' Mb DNA segment contributes ' + fmt(nm,0) +
+      ' nm of metaphase length, well above the ' + ABBE_NM +
+      ' nm Abbe diffraction limit. Standard 400-band karyotype should detect this directly.';
+  } else if (nm >= ABBE_NM) {
+    verdict.className = 'verdict borderline';
+    verdict.textContent = 'Predicted: borderline (' + fmt(nm,0) + ' nm) — high-resolution karyotype';
+    explain.textContent =
+      'A ' + fmt(mb,1) + ' Mb segment sits between the Abbe limit (' + ABBE_NM +
+      ' nm) and 1 MCU (250 nm). Detection on standard karyotype is uncertain; high-resolution prometaphase or FISH may be needed.';
+  } else {
+    verdict.className = 'verdict hidden';
+    verdict.textContent = 'Predicted: sub-Abbe (' + fmt(nm,0) + ' nm) — FISH or array required';
+    explain.textContent =
+      'A ' + fmt(mb,1) + ' Mb segment contributes only ' + fmt(nm,0) +
+      ' nm of metaphase length, below the ' + ABBE_NM +
+      ' nm diffraction limit. Not visible on standard karyotype. Detection requires FISH, MLPA, array-CGH, or sequencing.';
+  }
+}
+
+function update(source) {
+  let mb;
+  const v = parseFloat(document.getElementById(source).value);
+  if (isNaN(v)) return;
+  switch(source) {
+    case 'mb':    mb = v; break;
+    case 'um':    mb = v * 1000 / NM_PER_MB; break;
+    case 'nm':    mb = v / NM_PER_MB; break;
+    case 'mcu':   mb = v * MB_PER_MCU; break;
+    case 'rao':   mb = v * KB_PER_RAO / 1000; break;
+    case 'dixon': mb = v * KB_PER_DIXON / 1000; break;
+    case 'loops': mb = v * KB_PER_LOOP / 1000; break;
+  }
+  recompute(mb);
+}
+
+// Populate chromosome reference table
+const tbody = document.getElementById('chrtable');
+human.forEach(([c, len, mb]) => {
+  const mcu = mb / MB_PER_MCU;
+  const pred = mcu * UM_PER_MCU;
+  const row = `<tr><td>${c}</td><td>${fmt(mb,2)}</td><td>${fmt(mcu,2)}</td>` +
+              `<td>${fmt(pred,2)}</td><td>${fmt(len,2)}</td></tr>`;
+  tbody.insertAdjacentHTML('beforeend', row);
+});
+
+// Initial render
+recompute(100);
+</script>
+
+</body>
+</html>
